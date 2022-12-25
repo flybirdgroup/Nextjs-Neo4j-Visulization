@@ -5,34 +5,9 @@ import { useState } from 'react';
 const NoSSRForceGraph = dynamic(() => import('../lib/NoSSRForceGraph'), {
   ssr: false
 });
-
 const mostRecentQuery = gql`
   {
     articles(options: { limit: 30, sort: { created: DESC } }) {
-      __typename
-      id
-      url
-      title
-      created
-      tags {
-        __typename
-        name
-      }
-      user {
-        username
-        avatar
-        __typename
-      }
-    }
-  }
-`;
-
-const moreArticlesQuery = gql`
-  query articlesByTag($tag: String) {
-    articles(
-      where: { tags: { name: $tag } }
-      options: { limit: 10, sort: { created: DESC } }
-    ) {
       __typename
       id
       url
@@ -101,24 +76,12 @@ const formatData = (data) => {
 
 export default function Home() {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+
   const { data } = useQuery(mostRecentQuery, {
     onCompleted: (data) => setGraphData(formatData(data))
   });
-  const [loadMoreArticles, { called, loading, data: newData }] = useLazyQuery(
-    moreArticlesQuery,
-    {
-      onCompleted: (data) => {
-        const newSubgraph = formatData(data);
-        setGraphData({
-          nodes: _.uniqBy([...graphData.nodes, ...newSubgraph.nodes], 'id'),
-          links: [...graphData.links, ...newSubgraph.links]
-        });
-      }
-    }
-  );
-  console.log(graphData);
+
   return (
-    
     <NoSSRForceGraph
       graphData={graphData}
       nodeLabel={(node) => {
@@ -126,17 +89,6 @@ export default function Home() {
       }}
       nodeAutoColorBy={'__typename'}
       nodeRelSize={8}
-      onNodeClick={(node, event) => {
-        console.log('You clicked me!');
-        console.log(node);
-
-        if (node.__typename === 'Tag') {
-          console.log('Lode more articles');
-          loadMoreArticles({ variables: { tag: node.id } });
-        } else if (node.__typename == 'Article') {
-          window.open(node.url, '_blank');
-        }
-      }}
     />
   );
 }
