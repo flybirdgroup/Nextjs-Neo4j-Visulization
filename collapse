@@ -1,64 +1,73 @@
-import React, { useState } from "react";
-import Graph from "react-graph-vis";
+import React, { useState } from 'react';
+import Graph from 'react-graph-vis';
 
-const graph = {
-  nodes: [
-    { id: 1, label: "Node 1" },
-    { id: 2, label: "Node 2" },
-    { id: 3, label: "Node 3" },
-    { id: 4, label: "Node 4" }
-  ],
-  edges: [
-    { from: 1, to: 2 },
-    { from: 1, to: 3 },
-    { from: 2, to: 4 },
-    { from: 3, to: 4 }
-  ]
-};
+function App() {
+  const [graph, setGraph] = useState({
+    nodes: [
+      { id: 1, label: 'Node 1', level: 1, collapsed: false },
+      { id: 2, label: 'Node 2', level: 2, collapsed: true },
+      { id: 3, label: 'Node 3', level: 2, collapsed: true },
+      { id: 4, label: 'Node 4', level: 3, collapsed: true },
+      { id: 5, label: 'Node 5', level: 3, collapsed: true },
+    ],
+    edges: [
+      { from: 1, to: 2 },
+      { from: 1, to: 3 },
+      { from: 2, to: 4 },
+      { from: 2, to: 5 },
+    ],
+  });
 
-const options = {
-  layout: {
-    hierarchical: {
-      direction: "LR"
+  const handleDoubleClick = (event) => {
+    const nodeId = event.nodes[0];
+    const newGraph = { ...graph };
+    const node = newGraph.nodes.find((n) => n.id === nodeId);
+
+    if (!node.collapsed) {
+      // 如果节点未折叠，则折叠它
+      newGraph.nodes = newGraph.nodes.map((n) =>
+        n.level > node.level && n.id !== nodeId
+          ? { ...n, collapsed: true }
+          : n
+      );
+    } else {
+      // 如果节点已折叠，则展开它
+      newGraph.nodes = newGraph.nodes.map((n) =>
+        n.id === nodeId ? { ...n, collapsed: false } : n
+      );
     }
-  },
-  edges: {
-    color: "#000000"
-  },
-  nodes: {
-    shape: "box"
-  },
-  interaction: {
-    hover: true,
-    dragNodes: true,
-    zoomView: false
-  }
-};
 
-const App = () => {
-  const [nodes, setNodes] = useState(graph.nodes);
-
-  const handleNodeClick = nodeId => {
-    setNodes(prevNodes =>
-      prevNodes.map(node =>
-        node.id === nodeId ? { ...node, hidden: !node.hidden } : node
-      )
-    );
+    setGraph(newGraph);
   };
 
-  const modifiedGraph = {
-    ...graph,
-    nodes: nodes.map(node => ({ ...node, hidden: node.hidden || false }))
+  const options = {
+    layout: {
+      hierarchical: {
+        direction: 'UD',
+        sortMethod: 'directed',
+      },
+    },
+    edges: {
+      arrows: 'to',
+    },
+    interaction: {
+      hover: true,
+      doubleClick: {
+        enabled: true,
+        selectConnectedEdges: false,
+        // 双击事件处理函数
+        handler: handleDoubleClick,
+      },
+    },
   };
 
   return (
-    <Graph
-      graph={modifiedGraph}
-      options={options}
-      events={{ doubleClick: ({ nodes }) => handleNodeClick(nodes[0]) }}
-    />
+    <div>
+      <Graph graph={graph} options={options} style={{ height: '500px' }} />
+    </div>
   );
-};
+}
 
 export default App;
+
 
