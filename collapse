@@ -1,95 +1,64 @@
-import React, { useState } from 'react';
-import Graph from 'react-graph-vis';
+import React, { useState } from "react";
+import Graph from "react-graph-vis";
 
 const graph = {
   nodes: [
-    { id: 1, label: 'Node 1' },
-    { id: 2, label: 'Node 2' },
-    { id: 3, label: 'Node 3' },
-    { id: 4, label: 'Node 4' },
-    { id: 5, label: 'Node 5' },
+    { id: 1, label: "Node 1" },
+    { id: 2, label: "Node 2" },
+    { id: 3, label: "Node 3" },
+    { id: 4, label: "Node 4" }
   ],
   edges: [
     { from: 1, to: 2 },
     { from: 1, to: 3 },
     { from: 2, to: 4 },
-    { from: 2, to: 5 },
-  ],
+    { from: 3, to: 4 }
+  ]
 };
 
 const options = {
   layout: {
     hierarchical: {
-      direction: 'UD',
-      sortMethod: 'directed',
-    },
+      direction: "LR"
+    }
   },
   edges: {
-    arrows: 'to',
+    color: "#000000"
+  },
+  nodes: {
+    shape: "box"
   },
   interaction: {
     hover: true,
-  },
+    dragNodes: true,
+    zoomView: false
+  }
 };
 
-const events = {
-  select: function(event) {
-    const { nodes, edges } = event;
-    console.log('Selected nodes:', nodes);
-    console.log('Selected edges:', edges);
-  },
-};
+const App = () => {
+  const [nodes, setNodes] = useState(graph.nodes);
 
-function App() {
-  const [state, setState] = useState({
-    nodes: graph.nodes,
-    edges: graph.edges,
-  });
+  const handleNodeClick = nodeId => {
+    setNodes(prevNodes =>
+      prevNodes.map(node =>
+        node.id === nodeId ? { ...node, hidden: !node.hidden } : node
+      )
+    );
+  };
 
-  const handleClick = (event) => {
-    const { nodes } = event;
-    const node = state.nodes.find((n) => n.id === nodes[0]);
-
-    if (node.clicks === undefined) {
-      node.clicks = 1;
-      setState((prevState) => ({
-        ...prevState,
-        nodes: [...prevState.nodes],
-      }));
-    } else if (node.clicks === 1) {
-      node.clicks = 2;
-      setTimeout(() => {
-        node.clicks = undefined;
-        setState((prevState) => ({
-          ...prevState,
-          nodes: [...prevState.nodes],
-        }));
-      }, 300);
-    } else {
-      node.clicks = undefined;
-      setState((prevState) => ({
-        ...prevState,
-        nodes: prevState.nodes.map((n) =>
-          n.id === node.id
-            ? {
-                ...n,
-                hidden: !n.hidden,
-              }
-            : n
-        ),
-      }));
-    }
+  const modifiedGraph = {
+    ...graph,
+    nodes: nodes.map(node => ({ ...node, hidden: node.hidden || false }))
   };
 
   return (
     <Graph
-      graph={state}
+      graph={modifiedGraph}
       options={options}
-      events={events}
-      style={{ width: '100%', height: '500px' }}
-      onSelectNode={handleClick}
+      events={{ doubleClick: ({ nodes }) => handleNodeClick(nodes[0]) }}
     />
   );
-}
+};
 
 export default App;
+
