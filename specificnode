@@ -1,0 +1,67 @@
+import React, { useState, useEffect } from "react";
+import { Graph } from "react-graph-vis";
+
+const graph = {
+  nodes: [
+    { id: 1, label: "Node 1" },
+    { id: 2, label: "Node 2" },
+    { id: 3, label: "Node 3" },
+  ],
+  edges: [
+    { from: 1, to: 2 },
+    { from: 2, to: 3 },
+  ],
+};
+
+const options = {
+  layout: {
+    improvedLayout: false,
+  },
+  edges: {
+    color: "#000000",
+  },
+};
+
+const MyGraph = () => {
+  const [network, setNetwork] = useState(null);
+
+  useEffect(() => {
+    if (!network) return;
+    const nodes = network.getNodes();
+    const node = nodes.find((n) => n.id === 2); // specific node with id 2
+    const nodePos = network.getPositions([node.id]);
+    console.log(nodePos[node.id]);
+  }, [network]);
+
+  return (
+    <div>
+      <Graph
+        graph={graph}
+        options={options}
+        events={{
+          select: function (event) {
+            console.log(event);
+          },
+          loaded: function (event) {
+            const network = event.network;
+            setNetwork(network);
+          },
+        }}
+        style={{ height: "500px" }}
+      />
+      {network ? (
+        <div
+          style={{
+            position: "absolute",
+            left: `${network.getPositions([2])[2].x}px`,
+            top: `${network.getPositions([2])[2].y}px`,
+          }}
+        >
+          Specific Node
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+export default MyGraph;
