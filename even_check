@@ -1,0 +1,125 @@
+import React, { useState, useEffect } from 'react';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { Graph } from 'react-d3-graph';
+import { Button, Input, Form, Modal, message } from 'antd';
+import axios from 'axios';
+
+const Networking = () => {
+  const router = useRouter();
+  const [graphData, setGraphData] = useState({});
+  const [searchText, setSearchText] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [questionnaireData, setQuestionnaireData] = useState({
+    staffid: '',
+    questions: {},
+  });
+
+  // Set up the Graph component configuration
+  const graphConfig = {
+    nodeHighlightBehavior: true,
+    directed: true,
+    node: {
+      color: '#d3d3d3',
+      size: 120,
+      highlightStrokeColor: 'blue',
+    },
+    link: {
+      highlightColor: 'lightblue',
+    },
+  };
+
+  // Get the graph data from the server
+  useEffect(() => {
+    axios
+      .get('/api/graph')
+      .then((response) => {
+        setGraphData(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
+  // Handle the search text input
+  const handleSearchText = (e) => {
+    setSearchText(e.target.value);
+  };
+
+  // Handle the search button click
+  const handleSearchButton = () => {
+    if (searchText === '') {
+      message.error('Please enter a valid search text.');
+      return;
+    }
+
+    axios
+      .post('/api/search', { searchText })
+      .then((response) => {
+        setGraphData(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  // Handle the questionnaire form submission
+  const handleQuestionnaireSubmit = (values) => {
+    // Save the questionnaire data to the server
+    axios
+      .post('/api/questionnaire', {
+        staffid: questionnaireData.staffid,
+        answers: values,
+      })
+      .then((response) => {
+        setIsModalVisible(false);
+        message.success('Questionnaire submitted successfully.');
+      })
+      .catch((error) => {
+        console.log(error);
+        message.error('Error submitting questionnaire.');
+      });
+  };
+
+  // Handle the questionnaire form cancel
+  const handleQuestionnaireCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  // Handle the questionnaire button click
+  const handleQuestionnaireButton = () => {
+    setIsModalVisible(true);
+  };
+
+  // Handle the REST button click
+  const handleRestButton = () => {
+    axios
+      .get('/api/reset')
+      .then((response) => {
+        setGraphData(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  // Handle the user clicks on a node
+  const handleNodeClick = (nodeId) => {
+    // Record the user action in the server log
+    axios
+      .post('/api/log', {
+        staffid: questionnaireData.staffid,
+        action: `Clicked on node ${nodeId}`,
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  // Handle the user double clicks on a node
+  const handleNodeDoubleClick = (nodeId) => {
+    const updatedData = { ...graphData };
+    const node = updatedData.nodes.find((n) => n.id === nodeId);
+    if (node) {
+      set
+
