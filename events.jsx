@@ -27,7 +27,12 @@
   </nav>
 </header>
 
-
+<div class="relative">
+  <input type="text" placeholder="Search" class="border border-gray-400 rounded-md pl-10 pr-4 py-2">
+  <svg class="absolute left-3 top-3 h-5 w-5 text-gray-400" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
+    <path d="M22 22L15.5 15.5M15.5 15.5C14.09 16.84 12.11 17.5 10 17.5C5.58 17.5 2 13.92 2 9.5C2 5.08 5.58 1.5 10 1.5C14.42 1.5 18 5.08 18 9.5C18 11.61 17.34 13.59 16 15L22 22Z"></path>
+  </svg>
+</div>
 
 
 
