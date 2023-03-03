@@ -1,23 +1,22 @@
+
 <header className="bg-white shadow">
   <nav className="container mx-auto px-4 py-6 flex items-center justify-between">
     <div className="flex items-center">
-      <div>
-        <Image src="/logo.png" alt="Logo" width={120} height={40} />
+      <Image src="/logo.png" alt="Logo" width={120} height={40} />
+      <div className="ml-4">
+        <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-l-lg focus:outline-none focus:shadow-outline">
+          My Networks
+        </button>
+        <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 focus:outline-none focus:shadow-outline">
+          Find People
+        </button>
+        <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 focus:outline-none focus:shadow-outline">
+          Events
+        </button>
+        <button className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-r-lg focus:outline-none focus:shadow-outline">
+          Groups
+        </button>
       </div>
-      <ul className="flex ml-6">
-        <li className="mr-6">
-          <button className="text-gray-600 hover:text-gray-800 font-medium focus:outline-none">My Networks</button>
-        </li>
-        <li className="mr-6">
-          <button className="text-gray-600 hover:text-gray-800 font-medium focus:outline-none">Events</button>
-        </li>
-        <li className="mr-6">
-          <button className="text-gray-600 hover:text-gray-800 font-medium focus:outline-none">Find People</button>
-        </li>
-        <li className="mr-6">
-          <button className="text-gray-600 hover:text-gray-800 font-medium focus:outline-none">Groups</button>
-        </li>
-      </ul>
     </div>
     <div className="flex items-center">
       <input className="bg-gray-200 rounded-l-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="search" type="text" placeholder="Search..." />
