@@ -1,49 +1,13 @@
-pipeline {
-    parameters {
-        // Define a multi-line string parameter to get the secret values
-        // The default value is just an example, replace it with your actual secrets
-        multilineString(name: 'mySecrets', defaultValue: 'myUsername=mySecretUsername\nmyPassword=mySecretPassword')
+{
+  "userManaged": {
+    "locations": [
+      "europe-west2",
+      "asia-northeast1",
+      "us-central1"
+    ],
+    "customer-managed-encryption": {
+      "kmsKeyName": "projects/my-project/locations/europe-west2/keyRings/my-keyring/cryptoKeys/my-key"
     }
-
-    stages {
-        stage('Create Secrets File') {
-            steps {
-                // Split the multi-line string parameter into separate lines
-                def secrets = params.mySecrets.split('\n')
-
-                // Create a temporary file to store the secrets
-                def secretsFile = sh(script: 'mktemp', returnStdout: true).trim()
-
-                // Write the secrets to the file
-                writeFile file: secretsFile, text: secrets.join('\n')
-
-                // Store the file path in an environment variable
-                withEnv(['SECRETS_FILE=' + secretsFile]) {
-                    // Ensure the file has the correct permissions
-                    sh 'chmod 600 $SECRETS_FILE'
-                }
-            }
-        }
-
-        stage('Upload Secrets to GCP Secret Manager') {
-            steps {
-                // Create a credentials object to authenticate with GCP
-                withCredentials([gcpServiceAccount(projectId: 'my-gcp-project', jsonKeyVariable: 'GCP_SA_KEY')]) {
-                    // Authenticate with GCP
-                    sh 'gcloud auth activate-service-account --key-file=$GCP_SA_KEY'
-
-                    // Upload the secrets file to GCP Secret Manager
-                    sh "gcloud secrets create my-secrets --data-file=$SECRETS_FILE --project=my-gcp-project"
-                }
-            }
-        }
-
-        stage('Cleanup') {
-            steps {
-                // Delete the temporary secrets file
-                sh "rm -f $SECRETS_FILE"
-            }
-        }
-    }
+  }
 }
 
