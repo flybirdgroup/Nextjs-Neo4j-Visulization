@@ -1,87 +1,49 @@
-import React, { useState, useEffect } from 'react';
-import Graph from 'react-graph-vis';
-
-const graph = {
-  nodes: [
-    { id: 1, label: 'Node 1' },
-    { id: 2, label: 'Node 2' },
-    { id: 3, label: 'Node 3' },
-    { id: 4, label: 'Node 4' },
-    { id: 5, label: 'Node 5' },
-  ],
-  edges: [
-    { from: 1, to: 2 },
-    { from: 1, to: 3 },
-    { from: 2, to: 4 },
-    { from: 2, to: 5 },
-  ],
-};
-
-const options = {
-  layout: {
-    hierarchical: {
-      direction: 'UD',
-      sortMethod: 'directed',
-    },
-  },
-  edges: {
-    arrows: 'to',
-  },
-  interaction: {
-    hover: true,
-  },
-};
-
-const events = {
-  select: function(event) {
-    const { nodes, edges } = event;
-    console.log('Selected nodes:', nodes);
-    console.log('Selected edges:', edges);
-  },
-};
-
-function App() {
-  const [network, setNetwork] = useState(null);
-  const [divPosition, setDivPosition] = useState({});
-
-  useEffect(() => {
-    if (network) {
-      const nodeId = 1;
-      const positions = network.getPositions([nodeId]);
-      const position = positions[nodeId];
-      setDivPosition({
-        left: position.x,
-        top: position.y,
-      });
+pipeline {
+    parameters {
+        // Define a multi-line string parameter to get the secret values
+        // The default value is just an example, replace it with your actual secrets
+        multilineString(name: 'mySecrets', defaultValue: 'myUsername=mySecretUsername\nmyPassword=mySecretPassword')
     }
-  }, [network]);
 
-  return (
-    <div>
-      <Graph
-        graph={graph}
-        options={options}
-        events={events}
-        style={{ width: '100%', height: '500px' }}
-        getNetwork={(network) => setNetwork(network)}
-      />
-      {divPosition.left && (
-        <div
-          style={{
-            position: 'absolute',
-            left: divPosition.left,
-            top: divPosition.top,
-            backgroundColor: 'yellow',
-            width: '50px',
-            height: '50px',
-            borderRadius: '25px',
-          }}
-        />
-      )}
-    </div>
-  );
+    stages {
+        stage('Create Secrets File') {
+            steps {
+                // Split the multi-line string parameter into separate lines
+                def secrets = params.mySecrets.split('\n')
+
+                // Create a temporary file to store the secrets
+                def secretsFile = sh(script: 'mktemp', returnStdout: true).trim()
+
+                // Write the secrets to the file
+                writeFile file: secretsFile, text: secrets.join('\n')
+
+                // Store the file path in an environment variable
+                withEnv(['SECRETS_FILE=' + secretsFile]) {
+                    // Ensure the file has the correct permissions
+                    sh 'chmod 600 $SECRETS_FILE'
+                }
+            }
+        }
+
+        stage('Upload Secrets to GCP Secret Manager') {
+            steps {
+                // Create a credentials object to authenticate with GCP
+                withCredentials([gcpServiceAccount(projectId: 'my-gcp-project', jsonKeyVariable: 'GCP_SA_KEY')]) {
+                    // Authenticate with GCP
+                    sh 'gcloud auth activate-service-account --key-file=$GCP_SA_KEY'
+
+                    // Upload the secrets file to GCP Secret Manager
+                    sh "gcloud secrets create my-secrets --data-file=$SECRETS_FILE --project=my-gcp-project"
+                }
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                // Delete the temporary secrets file
+                sh "rm -f $SECRETS_FILE"
+            }
+        }
+    }
 }
-
-export default App;
-
 
