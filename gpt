@@ -1,13 +1,46 @@
-{
-  "userManaged": {
-    "locations": [
-      "europe-west2",
-      "asia-northeast1",
-      "us-central1"
-    ],
-    "customer-managed-encryption": {
-      "kmsKeyName": "projects/my-project/locations/europe-west2/keyRings/my-keyring/cryptoKeys/my-key"
-    }
-  }
-}
+from google.cloud import bigquery
+from google.oauth2 import service_account
+
+# Set the project ID and dataset ID
+project_id = "your-project-id"
+dataset_id = "compdata-dev"
+
+# Set the billing account ID
+billing_account_id = "your-billing-account-id"
+
+# Set the location of the dataset
+location = "us-central1"
+
+# Set the service account email address
+service_account_email = "bq-admin@your-project-id.iam.gserviceaccount.com"
+
+# Load the service account key file
+credentials = service_account.Credentials.from_service_account_file("path/to/keyfile.json")
+
+# Create a BigQuery client with the service account credentials
+client = bigquery.Client(project=project_id, credentials=credentials)
+
+# Switch the billing account for the project
+client.update_project(billing_account=billing_account_id)
+
+# Get the dataset reference
+dataset_ref = client.dataset(dataset_id)
+
+# Set the dataset properties to switch to physical billing model
+dataset = bigquery.Dataset(dataset_ref)
+dataset.location = location
+dataset.default_table_expiration_ms = None
+dataset.billing_tier = "PROVISIONED"
+dataset.billing_model = "PROJECT"
+
+# Update the dataset
+client.update_dataset(dataset, ["location", "default_table_expiration_ms", "billing_tier", "billing_model"])
+
+# Print the updated dataset properties
+updated_dataset = client.get_dataset(dataset_ref)
+print(f"Dataset ID: {updated_dataset.dataset_id}")
+print(f"Location: {updated_dataset.location}")
+print(f"Default table expiration: {updated_dataset.default_table_expiration_ms}")
+print(f"Billing tier: {updated_dataset.billing_tier}")
+print(f"Billing model: {updated_dataset.billing_model}")
 
