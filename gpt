@@ -3,7 +3,7 @@ from google.oauth2 import service_account
 
 # Set the project ID and dataset ID
 project_id = "your-project-id"
-dataset_id = "compdata-dev"
+dataset_id = "comp-dev"
 
 # Set the billing account ID
 billing_account_id = "your-billing-account-id"
