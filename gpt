@@ -1,6 +1,4 @@
-ACCESS_TOKEN=$(gcloud auth application-default print-access-token)
+for table in $(gcloud bigquery tables list --project=<project-id> --dataset=source-dataset --format="value(table_id)"); do
+    gcloud bigquery tables copy source-dataset.$table destination-dataset.$table --project=<project-id>
+done
 
-QUERY="ALTER SCHEMA \`<your_project>.<your_dataset>\` SET OPTIONS(storage_billing_model='physical')"
-URL="https://www.googleapis.com/bigquery/v2/projects/<your_project>/queries"
-
-curl -s -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "Content-Type: application/json" --data-binary '{"query":"'"${QUERY}"'"}' "${URL}"
